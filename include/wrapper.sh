@@ -48,16 +48,22 @@ EOF
   S3_SECURITY="--s3credentials /opt/exhibitor/credentials.properties"
 fi
 
+
 if [[ -n ${S3_BUCKET} ]]; then
+  S3_CONFIG_PREFIX_ARG=""
+  if [[ -n ${S3_CONFIG_PREFIX} ]] ; then
+     S3_CONFIG_PREFIX_ARG="--s3configprefix ${S3_CONFIG_PREFIX}"
+  fi
+
   echo "backup-extra=throttle\=&bucket-name\=${S3_BUCKET}&key-prefix\=${S3_PREFIX}&max-retries\=4&retry-sleep-ms\=30000" >> /opt/exhibitor/defaults.conf
 
-  BACKUP_CONFIG="--configtype s3 --s3config ${S3_BUCKET}:${S3_PREFIX} ${S3_SECURITY} --s3region ${AWS_REGION} --s3backup true"
+  BACKUP_CONFIG="--configtype s3 --s3config ${S3_BUCKET}:${S3_PREFIX} ${S3_CONFIG_PREFIX_ARG} ${S3_SECURITY} --s3region ${AWS_REGION} --s3backup true"
 else
   BACKUP_CONFIG="--configtype file --fsconfigdir /opt/zookeeper/local_configs --filesystembackup true"
 fi
 
 if [[ -n ${ZK_PASSWORD} ]]; then
-	SECURITY="--security web.xml --realm Zookeeper:realm --remoteauth basic:zk"
+	SECURITY="--security /opt/exhibitor/web.xml --realm Zookeeper:realm --remoteauth basic:zk"
 	echo "zk: ${ZK_PASSWORD},zk" > realm
 fi
 
